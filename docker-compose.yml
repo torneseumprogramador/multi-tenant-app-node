@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Serviço da API Node.js
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo_app
+      - PORT=3000
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+    command: npm run dev
+    networks:
+      - todo-network
+
+  # Serviço do banco PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=todo_app
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - todo-network
+
+volumes:
+  postgres_data:
+
+networks:
+  todo-network:
+    driver: bridge 
