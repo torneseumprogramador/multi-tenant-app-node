@@ -38,19 +38,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware para resolver tenant
-app.use(TenantMiddleware.resolveTenant);
-
 // Rota principal
 app.get('/', (req, res) => {
   res.redirect('/tasks');
 });
 
-// Rotas da aplicação (com tenant)
-app.use('/tasks', TenantMiddleware.requireAuth, taskRoutes);
-
 // Rotas do admin (sem tenant)
 app.use('/admin', adminRoutes);
+
+// Middleware para resolver tenant (apenas para rotas não-admin)
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/admin')) {
+    TenantMiddleware.resolveTenant(req, res, next);
+  } else {
+    next();
+  }
+});
+
+// Rotas da aplicação (com tenant)
+app.use('/tasks', TenantMiddleware.requireAuth, taskRoutes);
 
 // Middleware de tratamento de erros
 app.use((req, res) => {
